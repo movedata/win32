@@ -122,14 +122,18 @@ int _tmain(void)
     else
         _tprintf(TEXT("File mapping object successfully created.\n"));
 
-    Privilege(TEXT("SeLockMemoryPrivilege"), FALSE);
+    // 调用 MapViewOfFile 之前降权，会引发拒绝访问，因此，调整降权调用位置
+    // Privilege(TEXT("SeLockMemoryPrivilege"), FALSE);
 
     pBuf = (LPTSTR) MapViewOfFile(hMapFile,          // handle to map object
          FILE_MAP_ALL_ACCESS | FILE_MAP_LARGE_PAGES, // read/write permission
          0,
          0,
          BUF_SIZE);
-
+    
+    // 此处调用问题解决
+    Privilege(TEXT("SeLockMemoryPrivilege"), FALSE);
+    
     if (pBuf == NULL)
         DisplayError(TEXT("MapViewOfFile"), GetLastError());
     else
